@@ -8,38 +8,41 @@ window.CATEGORIES = [
   { id: "pants", label: "Pants" },
 ];
 
+window.FITS = ["Oversize", "Wide leg"];
+window.SIZES = ["S", "M", "L", "XL", "XXL"];
+
 window.PRODUCTS = [
   {
     id: "palestine-tee", name: "Palestine Tee", category: "tees", price: 450,
-    fit: "Oversize", fabric: "Heavy cotton", badge: "New", stock: 24,
+    fit: "Oversize", fitTag: "Oversize", fabric: "Heavy cotton", badge: "New", stock: 24,
     sizes: ["S", "M", "L", "XL", "XXL"],
     colors: [{ name: "Black", hex: "#111111" }],
     gallery: [IMG + "palestine-front.jpg", IMG + "palestine-sit.jpg"],
   },
   {
     id: "watani-tee", name: "Watani Tee", category: "tees", price: 450,
-    fit: "Oversize", fabric: "Heavy cotton", badge: "New", stock: 6,
+    fit: "Oversize", fitTag: "Oversize", fabric: "Heavy cotton", badge: "New", stock: 6,
     sizes: ["S", "M", "L", "XL", "XXL"],
     colors: [{ name: "Black", hex: "#111111" }],
     gallery: [IMG + "watani-street.jpg", IMG + "watani-roof.jpg"],
   },
   {
     id: "roots-tee", name: "Roots Tee", category: "tees", price: 480,
-    fit: "Oversize", fabric: "Heavy cotton", badge: "", stock: 18,
+    fit: "Oversize", fitTag: "Oversize", fabric: "Heavy cotton", badge: "", stock: 18,
     sizes: ["S", "M", "L", "XL", "XXL"],
     colors: [{ name: "Black", hex: "#111111" }],
     gallery: [IMG + "roots-back.jpg"],
   },
   {
     id: "england-tee", name: "Three Lions Tee", category: "tees", price: 520,
-    fit: "Oversize", fabric: "Interlock", badge: "", stock: 12,
+    fit: "Oversize", fitTag: "Oversize", fabric: "Interlock", badge: "", stock: 12,
     sizes: ["M", "L", "XL", "XXL"],
     colors: [{ name: "White", hex: "#f2f2ee" }, { name: "Black", hex: "#111111" }],
     gallery: [IMG + "england.jpg"],
   },
   {
     id: "essential-set", name: "Essential Set", category: "sets", price: 1050,
-    fit: "Oversize tee + wide-leg pants", fabric: "Interlock", badge: "New", stock: 30,
+    fit: "Oversize tee + wide-leg pants", fitTag: "Oversize", fabric: "Interlock", badge: "New", stock: 30,
     sizes: ["S", "M", "L", "XL", "XXL"],
     colors: [
       { name: "Black", hex: "#16181b", img: IMG + "set-black.jpg" },
@@ -51,7 +54,7 @@ window.PRODUCTS = [
   },
   {
     id: "wide-leg-sweatpants", name: "Wide-Leg Sweatpants", category: "pants", price: 650,
-    fit: "Wide leg", fabric: "Bolivar", badge: "", stock: 40,
+    fit: "Wide leg", fitTag: "Wide leg", fabric: "Bolivar", badge: "", stock: 40,
     sizes: ["S", "M", "L", "XL", "XXL"],
     colors: [
       { name: "Black", hex: "#16181b", img: IMG + "pants-black.jpg" },

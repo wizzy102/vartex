@@ -85,26 +85,92 @@ function homeView() {
     <footer class="foot">VARTEX &middot; Modern streetwear from Egypt<br><a href="https://www.instagram.com/vartex.eg/" target="_blank" rel="noopener">@vartex.eg</a></footer>`;
 }
 
+// ---------- Shop ----------
+// Filters live in the URL: #/shop?cat=tees&size=M&fit=Oversize&sort=low
+const SORTS = { new: "Newest", low: "Price: low to high", high: "Price: high to low" };
+
+function shopParams() {
+  const q = new URLSearchParams(location.hash.split("?")[1] || "");
+  return { cat: q.get("cat") || "", size: q.get("size") || "", fit: q.get("fit") || "", sort: q.get("sort") || "new" };
+}
+function shopHref(next) {
+  const q = new URLSearchParams();
+  for (const [k, v] of Object.entries(next)) if (v && !(k === "sort" && v === "new")) q.set(k, v);
+  const s = q.toString();
+  return "#/shop" + (s ? "?" + s : "");
+}
+
+function shopView() {
+  const f = shopParams();
+  let list = PRODUCTS.filter((p) =>
+    (!f.cat || p.category === f.cat) && (!f.fit || p.fitTag === f.fit) && (!f.size || p.sizes.includes(f.size)));
+  if (f.sort === "low") list = [...list].sort((a, b) => a.price - b.price);
+  if (f.sort === "high") list = [...list].sort((a, b) => b.price - a.price);
+  if (f.sort === "new") list = [...list].sort((a, b) => (b.badge === "New") - (a.badge === "New"));
+
+  const tab = (id, label) => `<a class="tab ${f.cat === id ? "on" : ""}" href="${shopHref({ ...f, cat: id })}">${label}</a>`;
+  const pill = (key, val) => `<a class="pill ${f[key] === val ? "on" : ""}" href="${shopHref({ ...f, [key]: f[key] === val ? "" : val })}">${val}</a>`;
+  const active = f.cat || f.size || f.fit;
+
+  return `
+    <section class="shop-head">
+      <h1 class="display">Shop</h1>
+      <div class="tabs">${tab("", "All")}${CATEGORIES.map((c) => tab(c.id, c.label)).join("")}</div>
+    </section>
+
+    <section class="filters">
+      <div class="filter-row"><span class="flabel">Size</span><div class="pills">${SIZES.map((s) => pill("size", s)).join("")}</div></div>
+      <div class="filter-row"><span class="flabel">Fit</span><div class="pills">${FITS.map((s) => pill("fit", s)).join("")}</div></div>
+      <div class="filter-row">
+        <span class="flabel">Sort</span>
+        <select class="sort" data-sort aria-label="Sort products">
+          ${Object.entries(SORTS).map(([k, v]) => `<option value="${k}" ${f.sort === k ? "selected" : ""}>${v}</option>`).join("")}
+        </select>
+      </div>
+    </section>
+
+    <section class="section results">
+      <div class="result-bar">
+        <span>${list.length} ${list.length === 1 ? "item" : "items"}</span>
+        ${active ? `<a class="link-more" href="#/shop">Clear filters</a>` : ""}
+      </div>
+      ${list.length
+        ? `<div class="grid">${list.map(productCard).join("")}</div>`
+        : `<div class="empty">
+             <div class="display">Nothing here</div>
+             <p>No pieces match those filters yet.</p>
+             <a class="btn ghost" href="#/shop">Clear filters</a>
+           </div>`}
+    </section>`;
+}
+
 const stub = (title, step) => () =>
   `<div class="stub"><h2 class="display">${title}</h2><p>Coming in step ${step}.</p><p><a class="link-more" href="#/">Back home</a></p></div>`;
 
 const routes = {
   "": homeView,
-  shop: stub("Shop", 3),
+  shop: shopView,
   p: stub("Product", 4),
   checkout: stub("Checkout", 5),
   order: stub("Order confirmed", 5),
   custom: stub("Custom & wholesale", 6),
 };
 
+let lastKey = null;
 function render() {
   const [path] = location.hash.replace(/^#\/?/, "").split("?");
   const key = path.split("/")[0];
   $("#app").innerHTML = (routes[key] || stub("Not found", 0))();
   document.querySelectorAll(".tabbar a").forEach((a) => a.classList.toggle("on", a.dataset.nav === key));
-  scrollTo(0, 0);
+  if (key !== lastKey) scrollTo(0, 0);   // keep scroll position while filtering inside Shop
+  lastKey = key;
   updateBagCount();
 }
+
+// Sort dropdown writes to the URL like the other filters
+document.addEventListener("change", (e) => {
+  if (e.target.matches("[data-sort]")) location.hash = shopHref({ ...shopParams(), sort: e.target.value });
+});
 
 addEventListener("hashchange", render);
 render();
