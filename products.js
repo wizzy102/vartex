@@ -68,3 +68,33 @@ window.PRODUCTS = [
 
 window.productImage = (p) => (p.colors[0].img || p.gallery[0]);
 window.fmtEGP = (n) => "EGP " + n.toLocaleString("en-US");
+
+// ---------- Delivery (fees and times are placeholders until the owner confirms) ----------
+window.FREE_SHIP_MIN = 1500;
+const tier = (fee, days, names) => names.map((name) => ({ name, fee, days }));
+window.GOVERNORATES = [
+  ...tier(60, [1, 2], ["Cairo", "Giza"]),
+  ...tier(80, [2, 3], ["Alexandria", "Qalyubia", "Gharbia", "Dakahlia", "Sharqia", "Monufia", "Kafr El Sheikh", "Beheira",
+    "Damietta", "Port Said", "Ismailia", "Suez", "Fayoum", "Beni Suef"]),
+  ...tier(100, [3, 5], ["Minya", "Assiut", "Sohag", "Qena", "Luxor", "Aswan", "Red Sea", "Matrouh", "North Sinai", "South Sinai", "New Valley"]),
+].sort((a, b) => a.name.localeCompare(b.name));
+window.govByName = (name) => GOVERNORATES.find((g) => g.name === name) || GOVERNORATES.find((g) => g.name === "Cairo");
+
+// Delivery window as business days from tomorrow. Friday is a day off, so it is not counted.
+window.estimateWindow = (gov, from = new Date()) => {
+  const nth = (n) => {
+    const d = new Date(from);
+    while (n > 0) { d.setDate(d.getDate() + 1); if (d.getDay() !== 5) n--; }
+    return d;
+  };
+  const fmt = (d) => d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+  return `${fmt(nth(gov.days[0]))} – ${fmt(nth(gov.days[1]))}`;
+};
+
+// ---------- Size guide (placeholder measurements, flat in cm: confirm with the owner) ----------
+window.SIZE_GUIDE = {
+  top: { title: "Tees and sets", cols: ["Size", "Chest", "Length"],
+    rows: [["S", 56, 70], ["M", 58, 72], ["L", 60, 74], ["XL", 62, 76], ["XXL", 64, 78]] },
+  pants: { title: "Pants", cols: ["Size", "Waist", "Length"],
+    rows: [["S", 34, 98], ["M", 36, 100], ["L", 38, 102], ["XL", 40, 104], ["XXL", 42, 106]] },
+};

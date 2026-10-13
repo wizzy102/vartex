@@ -1,19 +1,4 @@
 // Hash router + Home screen. Routes: #/  #/shop  #/p/:id  #/checkout  #/order/:id  #/custom
-const BAG_KEY = "vt_bag_v1";
-const $ = (sel, root = document) => root.querySelector(sel);
-const byId = (id) => PRODUCTS.find((p) => p.id === id);
-
-// ---------- Bag (full drawer comes in step 4) ----------
-function readBag() {
-  try { return JSON.parse(localStorage.getItem(BAG_KEY)) || []; } catch { return []; }
-}
-function updateBagCount() {
-  const n = readBag().reduce((sum, l) => sum + l.qty, 0);
-  const el = $("#bag-count");
-  el.textContent = n;
-  el.hidden = n === 0;
-}
-
 // ---------- Shared pieces ----------
 const icon = {
   cod: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>',
@@ -144,13 +129,155 @@ function shopView() {
     </section>`;
 }
 
+// ---------- Product ----------
+const slidesFor = (p, c) => (c.img ? [c.img] : p.gallery);
+const slideHtml = (p, c) => slidesFor(p, c).map((src) => `<img src="${src}" alt="${p.name}">`).join("");
+const dotsHtml = (n) => (n > 1 ? Array.from({ length: n }, (_, i) => `<i class="${i ? "" : "on"}"></i>`).join("") : "");
+const savedGov = () => { try { return localStorage.getItem("vt_gov") || "Cairo"; } catch { return "Cairo"; } };
+
+function deliveryHtml(gov) {
+  const g = govByName(gov);
+  return `<div class="eta-line"><b>Arrives ${estimateWindow(g)}</b><span>Delivery ${fmtEGP(g.fee)} · free over ${fmtEGP(FREE_SHIP_MIN)}</span></div>`;
+}
+
+function productView(id) {
+  const p = byId(id);
+  if (!p) return stub("Not found", 0)();
+  const c = p.colors[0];
+  const guide = p.category === "pants" ? "pants" : "top";
+  const low = p.stock <= 8;
+  const gov = savedGov();
+
+  return `
+    <article class="pdp" data-id="${p.id}">
+      <div class="gallery-wrap">
+        <div class="gallery" id="gallery">${slideHtml(p, c)}</div>
+        <div class="gdots" id="gdots">${dotsHtml(slidesFor(p, c).length)}</div>
+        <a class="back" href="#/shop" aria-label="Back to shop">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+        </a>
+        <div class="badges">${p.badge ? `<span class="badge">${p.badge}</span>` : ""}${low ? `<span class="badge low">Only ${p.stock} left</span>` : ""}</div>
+      </div>
+
+      <div class="pdp-body">
+        <h1 class="display">${p.name}</h1>
+        <div class="pdp-price">${fmtEGP(p.price)}</div>
+        <div class="pdp-meta">${p.fit} · ${p.fabric}</div>
+
+        <div class="opt">
+          <div class="opt-head"><span class="flabel">Colour</span><b id="color-name">${c.name}</b></div>
+          <div class="swatches">
+            ${p.colors.map((col, i) => `<button class="swatch ${i ? "" : "on"}" data-color="${col.name}" style="--c:${col.hex}" aria-label="${col.name}"></button>`).join("")}
+          </div>
+        </div>
+
+        <div class="opt" id="size-opt">
+          <div class="opt-head"><span class="flabel">Size</span><button class="link-more plain" data-guide="${guide}">Size guide</button></div>
+          <div class="pills">${p.sizes.map((s) => `<button class="pill" data-pick="${s}">${s}</button>`).join("")}</div>
+          <p class="err" id="size-err" hidden>Choose a size first.</p>
+        </div>
+
+        <div class="opt">
+          <div class="opt-head"><span class="flabel">Quantity</span></div>
+          <div class="stepper"><button data-qty="-1" aria-label="Fewer">−</button><span id="qty">1</span><button data-qty="1" aria-label="More">+</button></div>
+        </div>
+
+        <div class="delivery">
+          <div class="opt-head"><span class="flabel">Delivery to</span>
+            <select id="gov" class="sort" aria-label="Governorate">
+              ${GOVERNORATES.map((g) => `<option ${g.name === gov ? "selected" : ""}>${g.name}</option>`).join("")}
+            </select>
+          </div>
+          <div id="eta">${deliveryHtml(gov)}</div>
+          <div class="cod"><span>${icon.cod}</span>Cash on delivery available. Pay when it arrives.</div>
+        </div>
+
+        <ul class="facts">
+          <li><b>Fit</b>${p.fit}</li>
+          <li><b>Fabric</b>${p.fabric}</li>
+          <li><b>Exchange</b>14 days if the size is wrong</li>
+        </ul>
+      </div>
+    </article>
+
+    <div class="buybar">
+      <div class="buy-total"><span>Total</span><b id="buy-total">${fmtEGP(p.price)}</b></div>
+      <button class="btn" id="add-btn">Add to bag</button>
+    </div>`;
+}
+
+// Product page interactions (the page is re-rendered per visit, so listeners are bound each time)
+function initProduct() {
+  const root = $(".pdp");
+  if (!root) return;
+  const p = byId(root.dataset.id);
+  const gallery = $("#gallery"), dots = $("#gdots");
+  const state = { color: p.colors[0], size: "", qty: 1 };
+  const total = () => ($("#buy-total").textContent = fmtEGP(p.price * state.qty));
+
+  gallery.addEventListener("scroll", () => {
+    const i = Math.round(gallery.scrollLeft / gallery.clientWidth);
+    [...dots.children].forEach((d, n) => d.classList.toggle("on", n === i));
+  }, { passive: true });
+
+  root.addEventListener("click", (e) => {
+    const col = e.target.closest("[data-color]");
+    if (col) {
+      state.color = p.colors.find((c) => c.name === col.dataset.color);
+      root.querySelectorAll(".swatch").forEach((s) => s.classList.toggle("on", s === col));
+      $("#color-name").textContent = state.color.name;
+      gallery.innerHTML = slideHtml(p, state.color);
+      gallery.scrollLeft = 0;
+      dots.innerHTML = dotsHtml(slidesFor(p, state.color).length);
+    }
+    const size = e.target.closest("[data-pick]");
+    if (size) {
+      state.size = size.dataset.pick;
+      root.querySelectorAll("[data-pick]").forEach((b) => b.classList.toggle("on", b === size));
+      $("#size-err").hidden = true;
+    }
+    const q = e.target.closest("[data-qty]");
+    if (q) { state.qty = Math.max(1, Math.min(Math.min(MAX_QTY, p.stock), state.qty + Number(q.dataset.qty))); $("#qty").textContent = state.qty; total(); }
+    const g = e.target.closest("[data-guide]");
+    if (g) openSizeGuide(g.dataset.guide);
+  });
+
+  $("#gov").addEventListener("change", (e) => {
+    try { localStorage.setItem("vt_gov", e.target.value); } catch {}
+    $("#eta").innerHTML = deliveryHtml(e.target.value);
+  });
+
+  $("#add-btn").addEventListener("click", () => {
+    if (!state.size) {
+      $("#size-err").hidden = false;
+      const opt = $("#size-opt");
+      opt.classList.remove("shake"); void opt.offsetWidth; opt.classList.add("shake");
+      opt.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+    Bag.add({ id: p.id, color: state.color.name, size: state.size, qty: state.qty });
+    openBag();
+  });
+}
+
+function openSizeGuide(kind) {
+  const g = SIZE_GUIDE[kind];
+  openSheet(`
+    <div class="sheet-head"><h2 class="display">Size guide</h2>
+      <button class="icon-btn" data-close aria-label="Close"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <p class="sheet-sub">${g.title}. Flat measurements in cm.</p>
+    <table class="guide"><thead><tr>${g.cols.map((c) => `<th>${c}</th>`).join("")}</tr></thead>
+      <tbody>${g.rows.map((r) => `<tr>${r.map((c) => `<td>${c}</td>`).join("")}</tr>`).join("")}</tbody></table>
+    <p class="sheet-note">Between sizes? Oversize fits are roomy, so most people stay with their usual size.</p>`);
+}
+
 const stub = (title, step) => () =>
   `<div class="stub"><h2 class="display">${title}</h2><p>Coming in step ${step}.</p><p><a class="link-more" href="#/">Back home</a></p></div>`;
 
 const routes = {
   "": homeView,
   shop: shopView,
-  p: stub("Product", 4),
+  p: productView,
   checkout: stub("Checkout", 5),
   order: stub("Order confirmed", 5),
   custom: stub("Custom & wholesale", 6),
@@ -160,11 +287,13 @@ let lastKey = null;
 function render() {
   const [path] = location.hash.replace(/^#\/?/, "").split("?");
   const key = path.split("/")[0];
-  $("#app").innerHTML = (routes[key] || stub("Not found", 0))();
+  $("#app").innerHTML = (routes[key] || stub("Not found", 0))(path.split("/")[1]);
+  document.body.classList.toggle("pdp-page", key === "p");
   document.querySelectorAll(".tabbar a").forEach((a) => a.classList.toggle("on", a.dataset.nav === key));
   if (key !== lastKey) scrollTo(0, 0);   // keep scroll position while filtering inside Shop
   lastKey = key;
   updateBagCount();
+  initProduct();
 }
 
 // Sort dropdown writes to the URL like the other filters
