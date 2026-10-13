@@ -278,8 +278,8 @@ const routes = {
   "": homeView,
   shop: shopView,
   p: productView,
-  checkout: stub("Checkout", 5),
-  order: stub("Order confirmed", 5),
+  checkout: checkoutView,
+  order: orderView,
   custom: stub("Custom & wholesale", 6),
 };
 
@@ -288,12 +288,13 @@ function render() {
   const [path] = location.hash.replace(/^#\/?/, "").split("?");
   const key = path.split("/")[0];
   $("#app").innerHTML = (routes[key] || stub("Not found", 0))(path.split("/")[1]);
-  document.body.classList.toggle("pdp-page", key === "p");
+  document.body.classList.toggle("has-bar", key === "p" || key === "checkout");
   document.querySelectorAll(".tabbar a").forEach((a) => a.classList.toggle("on", a.dataset.nav === key));
   if (key !== lastKey) scrollTo(0, 0);   // keep scroll position while filtering inside Shop
   lastKey = key;
   updateBagCount();
   initProduct();
+  initCheckout();
 }
 
 // Sort dropdown writes to the URL like the other filters
