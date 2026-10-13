@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0e13">
+  <title>VARTEX — Modern Streetwear</title>
+  <link rel="icon" href="assets/img/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,500..900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a href="#/" class="brand" aria-label="VARTEX home">
+      <img src="assets/img/logo.png" alt="" width="34" height="34">
+      <span>VARTEX</span>
+    </a>
+    <button class="icon-btn" id="bag-btn" aria-label="Open bag">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
+      <span class="count" id="bag-count" hidden>0</span>
+    </button>
+  </header>
+
+  <main id="app"></main>
+
+  <nav class="tabbar" aria-label="Main">
+    <a href="#/" data-nav="">Home</a>
+    <a href="#/shop" data-nav="shop">Shop</a>
+    <a href="#/custom" data-nav="custom">Custom</a>
+  </nav>
+
+  <script src="products.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
