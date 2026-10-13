@@ -260,7 +260,7 @@ body.locked { overflow: hidden; }
 .co-head { padding: 18px 16px 4px; }
 .back-link { color: var(--muted); font-size: 13px; }
 .co-head h1 { font-size: 32px; margin-top: 6px; }
-#co-form { padding: 8px 16px 0; }
+#co-form, #qt-form { padding: 8px 16px 0; }
 .co-block { border: 0; padding: 0; margin: 22px 0 0; min-width: 0; }
 .co-block legend { padding: 0; margin-bottom: 12px; font-family: var(--display); font-stretch: 112%; font-weight: 800; font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
 .field { display: block; margin-bottom: 14px; }
@@ -277,7 +277,7 @@ body.locked { overflow: hidden; }
 .phone input { border: 0; background: none; }
 .phone:focus-within { border-color: var(--accent); }
 .ferr { margin-top: 6px; color: #ff9a76; font-size: 13px; }
-.eta-note { margin-top: -2px; padding: 10px 12px; border-radius: 4px; background: var(--surface-2); font-size: 13px; }
+.eta-note { margin: -2px 0 14px; padding: 10px 12px; border-radius: 4px; background: var(--surface-2); font-size: 13px; }
 
 .pay-list { display: grid; gap: 10px; }
 .pay { display: flex; gap: 12px; align-items: flex-start; padding: 14px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); cursor: pointer; }
@@ -331,3 +331,16 @@ body.locked { overflow: hidden; }
 .addr em { color: var(--muted); }
 .pay-line { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 14px; color: #c3cbd6; }
 .pay-line b { color: var(--ink); }
+
+/* ---------- Custom & wholesale ---------- */
+.co-head .eyebrow { margin-bottom: 6px; }
+.lead { margin-top: 10px; color: var(--muted); }
+.types { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.types .pay { flex-direction: column; gap: 8px; padding: 14px 12px; }
+.hint { margin-top: 8px; color: var(--muted); font-size: 12px; }
+.upload { display: grid; place-items: center; min-height: 84px; padding: 14px; border: 1px dashed #3a4656; border-radius: 6px; background: var(--surface); color: var(--muted); text-align: center; cursor: pointer; }
+.upload input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.upload.has { border-style: solid; border-color: var(--accent); color: var(--ink); }
+.field > .upload span { margin: 0; font-size: 14px; color: inherit; }
+.totals.plain { border-top: 0; margin: 0 0 4px; padding: 0; }
+.totals.plain dd { text-align: right; color: var(--ink); }

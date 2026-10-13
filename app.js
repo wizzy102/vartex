@@ -280,7 +280,7 @@ const routes = {
   p: productView,
   checkout: checkoutView,
   order: orderView,
-  custom: stub("Custom & wholesale", 6),
+  custom: customView,
 };
 
 let lastKey = null;
@@ -288,13 +288,14 @@ function render() {
   const [path] = location.hash.replace(/^#\/?/, "").split("?");
   const key = path.split("/")[0];
   $("#app").innerHTML = (routes[key] || stub("Not found", 0))(path.split("/")[1]);
-  document.body.classList.toggle("has-bar", key === "p" || key === "checkout");
+  document.body.classList.toggle("has-bar", key === "p" || key === "checkout" || (key === "custom" && !path.split("/")[1]));
   document.querySelectorAll(".tabbar a").forEach((a) => a.classList.toggle("on", a.dataset.nav === key));
   if (key !== lastKey) scrollTo(0, 0);   // keep scroll position while filtering inside Shop
   lastKey = key;
   updateBagCount();
   initProduct();
   initCheckout();
+  initCustom();
 }
 
 // Sort dropdown writes to the URL like the other filters
